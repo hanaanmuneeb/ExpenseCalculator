@@ -468,7 +468,7 @@
         }
     </style>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
     <div class="container">
@@ -620,20 +620,18 @@
     </div>
 
     <script>
-        // --- Firebase Initialization ---
-        // TODO: Replace with your own Firebase config from the Firebase Console
+        // --- Firebase Initialization (Firestore) ---
         const firebaseConfig = {
-  apiKey: "AIzaSyBuOLYdHiJdO-BmpkN9LfUDW2I6FVu9LXU",
-  authDomain: "expense-calculator-b5815.firebaseapp.com",
-  databaseURL: "https://expense-calculator-b5815-default-rtdb.firebaseio.com",
-  projectId: "expense-calculator-b5815",
-  storageBucket: "expense-calculator-b5815.appspot.com",
-  messagingSenderId: "621644311567",
-  appId: "1:621644311567:web:e3a9bc56a7c0f0db01877a",
-  measurementId: "G-H8VJKZF2LG"
-};
+            apiKey: "AIzaSyBuOLYdHiJdO-BmpkN9LfUDW2I6FVu9LXU",
+            authDomain: "expense-calculator-b5815.firebaseapp.com",
+            projectId: "expense-calculator-b5815",
+            storageBucket: "expense-calculator-b5815.appspot.com",
+            messagingSenderId: "621644311567",
+            appId: "1:621644311567:web:e3a9bc56a7c0f0db01877a",
+            measurementId: "G-H8VJKZF2LG"
+        };
         firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
+        const db = firebase.firestore();
         // --- End Firebase Initialization ---
         
         let transactions = [];
@@ -662,22 +660,50 @@
             event.target.classList.add('active');
         }
         
-        // Save data to Firebase (was localStorage)
-        function saveData() {
-            const data = {
-                transactions: transactions,
-                transactionIdCounter: transactionIdCounter,
-                balances: balances,
-                lastUpdated: new Date().toISOString()
-            };
-            db.ref('expenseTrackerData').set(data);
+        // Save data to Firestore
+        async function saveData() {
+            try {
+                await db.collection('expenseTracker').doc('data').set({
+                    transactions: transactions,
+                    transactionIdCounter: transactionIdCounter,
+                    balances: balances,
+                    lastUpdated: new Date()
+                });
+                // console.log('Data saved successfully');
+            } catch (error) {
+                console.error('Error saving data:', error);
+                alert('Error saving data. Please try again.');
+            }
         }
-        
-        // Load data from Firebase (was localStorage)
-        function loadData() {
-            db.ref('expenseTrackerData').once('value').then((snapshot) => {
-                const data = snapshot.val();
-                if (data) {
+
+        // Load data from Firestore
+        async function loadData() {
+            try {
+                const doc = await db.collection('expenseTracker').doc('data').get();
+                if (doc.exists) {
+                    const data = doc.data();
+                    transactions = data.transactions || [];
+                    transactionIdCounter = data.transactionIdCounter || 1;
+                    balances = data.balances || {
+                        'Hanaan': { 'Fahad': 0, 'Tayyab': 0, 'Islam': 0 },
+                        'Fahad': { 'Hanaan': 0, 'Tayyab': 0, 'Islam': 0 },
+                        'Tayyab': { 'Hanaan': 0, 'Fahad': 0, 'Islam': 0 },
+                        'Islam': { 'Hanaan': 0, 'Fahad': 0, 'Tayyab': 0 }
+                    };
+                    renderTransactions();
+                    renderBalances();
+                }
+            } catch (error) {
+                console.error('Error loading data:', error);
+                alert('Error loading data. Using local data.');
+            }
+        }
+
+        // Listen for real-time updates
+        function setupRealTimeListener() {
+            db.collection('expenseTracker').doc('data').onSnapshot((doc) => {
+                if (doc.exists) {
+                    const data = doc.data();
                     transactions = data.transactions || [];
                     transactionIdCounter = data.transactionIdCounter || 1;
                     balances = data.balances || {
@@ -910,26 +936,32 @@
         }
         
         // Clear all data
-        function clearAllData() {
+        async function clearAllData() {
             if (confirm('Are you sure you want to clear all expenses and balances? This cannot be undone.')) {
-                transactions = [];
-                transactionIdCounter = 1;
-                balances = {
-                    'Hanaan': { 'Fahad': 0, 'Tayyab': 0, 'Islam': 0 },
-                    'Fahad': { 'Hanaan': 0, 'Tayyab': 0, 'Islam': 0 },
-                    'Tayyab': { 'Hanaan': 0, 'Fahad': 0, 'Islam': 0 },
-                    'Islam': { 'Hanaan': 0, 'Fahad': 0, 'Tayyab': 0 }
-                };
-                saveData();
-                renderTransactions();
-                renderBalances();
-                alert('All data cleared successfully!');
+                try {
+                    await db.collection('expenseTracker').doc('data').delete();
+                    transactions = [];
+                    transactionIdCounter = 1;
+                    balances = {
+                        'Hanaan': { 'Fahad': 0, 'Tayyab': 0, 'Islam': 0 },
+                        'Fahad': { 'Hanaan': 0, 'Tayyab': 0, 'Islam': 0 },
+                        'Tayyab': { 'Hanaan': 0, 'Fahad': 0, 'Islam': 0 },
+                        'Islam': { 'Hanaan': 0, 'Fahad': 0, 'Tayyab': 0 }
+                    };
+                    renderTransactions();
+                    renderBalances();
+                    alert('All data cleared successfully!');
+                } catch (error) {
+                    console.error('Error clearing data:', error);
+                    alert('Error clearing data. Please try again.');
+                }
             }
         }
         
         // Initialize app
-        window.addEventListener('load', () => {
-            loadData();
+        window.addEventListener('load', async () => {
+            await loadData();
+            setupRealTimeListener();
         });
     </script>
 </body>
