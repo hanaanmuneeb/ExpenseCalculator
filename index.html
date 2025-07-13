@@ -937,26 +937,33 @@
         
         // Clear all data
         async function clearAllData() {
-            if (confirm('Are you sure you want to clear all expenses and balances? This cannot be undone.')) {
-                try {
-                    await db.collection('expenseTracker').doc('data').delete();
-                    transactions = [];
-                    transactionIdCounter = 1;
-                    balances = {
-                        'Hanaan': { 'Fahad': 0, 'Tayyab': 0, 'Islam': 0 },
-                        'Fahad': { 'Hanaan': 0, 'Tayyab': 0, 'Islam': 0 },
-                        'Tayyab': { 'Hanaan': 0, 'Fahad': 0, 'Islam': 0 },
-                        'Islam': { 'Hanaan': 0, 'Fahad': 0, 'Tayyab': 0 }
-                    };
-                    renderTransactions();
-                    renderBalances();
-                    alert('All data cleared successfully!');
-                } catch (error) {
-                    console.error('Error clearing data:', error);
-                    alert('Error clearing data. Please try again.');
-                }
-            }
+    // Prompt for password
+    const password = prompt("Enter the admin password to clear all data:");
+    if (password !== "7122") { // <-- Change this to your desired password
+        alert("Incorrect password. Data was not cleared.");
+        return;
+    }
+
+    if (confirm('Are you sure you want to clear all expenses and balances? This cannot be undone.')) {
+        try {
+            await db.collection('expenseTracker').doc('data').delete();
+            transactions = [];
+            transactionIdCounter = 1;
+            balances = {
+                'Hanaan': { 'Fahad': 0, 'Tayyab': 0, 'Islam': 0 },
+                'Fahad': { 'Hanaan': 0, 'Tayyab': 0, 'Islam': 0 },
+                'Tayyab': { 'Hanaan': 0, 'Fahad': 0, 'Islam': 0 },
+                'Islam': { 'Hanaan': 0, 'Fahad': 0, 'Tayyab': 0 }
+            };
+            renderTransactions();
+            renderBalances();
+            alert('All data cleared successfully!');
+        } catch (error) {
+            console.error('Error clearing data:', error);
+            alert('Error clearing data. Please try again.');
         }
+    }
+}
         
         // Initialize app
         window.addEventListener('load', async () => {
