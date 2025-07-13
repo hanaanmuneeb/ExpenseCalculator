@@ -48,7 +48,43 @@
             font-weight: 600;
         }
         
-        .expense-form {
+        .tabs {
+            display: flex;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        
+        .tab {
+            padding: 1rem 2rem;
+            cursor: pointer;
+            border: none;
+            background: none;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #718096;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+        
+        .tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+        
+        .tab:hover {
+            color: #667eea;
+            background: rgba(102, 126, 234, 0.05);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .form-section {
             background: linear-gradient(135deg, #f7fafc, #edf2f7);
             padding: 2rem;
             border-radius: 16px;
@@ -148,6 +184,24 @@
             transform: translateY(0);
         }
         
+        .btn.payback {
+            background: linear-gradient(135deg, #48bb78, #38a169);
+            box-shadow: 0 4px 15px rgba(72, 187, 120, 0.3);
+        }
+        
+        .btn.payback:hover {
+            box-shadow: 0 6px 20px rgba(72, 187, 120, 0.4);
+        }
+        
+        .btn.danger {
+            background: linear-gradient(135deg, #fc8181, #f56565);
+            box-shadow: 0 4px 15px rgba(245, 101, 101, 0.3);
+        }
+        
+        .btn.danger:hover {
+            box-shadow: 0 6px 20px rgba(245, 101, 101, 0.4);
+        }
+        
         .expenses-section {
             margin-bottom: 2rem;
         }
@@ -187,6 +241,10 @@
         
         .expenses-table tr:hover {
             background: #f8fafc;
+        }
+        
+        .payments-table th {
+            background: linear-gradient(135deg, #48bb78, #38a169);
         }
         
         .balances-section {
@@ -240,6 +298,10 @@
             font-size: 1.1rem;
         }
         
+        .amount.positive {
+            color: #48bb78;
+        }
+        
         .delete-btn {
             background: linear-gradient(135deg, #fc8181, #f56565);
             color: white;
@@ -273,6 +335,31 @@
             color: #234e52;
         }
         
+        .status-badge.payment {
+            background: #f0fff4;
+            color: #22543d;
+        }
+        
+        .payment-type {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            background: #e6fffa;
+            color: #234e52;
+        }
+        
+        .payment-type.expense {
+            background: #e6fffa;
+            color: #234e52;
+        }
+        
+        .payment-type.payment {
+            background: #f0fff4;
+            color: #22543d;
+        }
+        
         /* Mobile Responsive */
         @media (max-width: 768px) {
             body {
@@ -287,8 +374,16 @@
                 font-size: 2rem;
             }
             
-            .expense-form {
+            .form-section {
                 padding: 1.5rem;
+            }
+            
+            .tabs {
+                flex-direction: column;
+            }
+            
+            .tab {
+                padding: 0.75rem 1rem;
             }
             
             .people-selection {
@@ -304,6 +399,8 @@
             .btn {
                 width: 100%;
                 padding: 0.875rem;
+                margin-left: 0;
+                margin-top: 0.5rem;
             }
             
             .expenses-table th,
@@ -359,7 +456,7 @@
             animation: fadeInUp 0.5s ease-out;
         }
         
-        .expense-form {
+        .form-section {
             animation: fadeInUp 0.3s ease-out;
         }
         
@@ -375,73 +472,124 @@
     <div class="container">
         <h1>Group Expense Tracker</h1>
         
-        <div class="expense-form">
-            <h2>💰 Add New Expense</h2>
-            <div class="form-group">
-                <label for="amount">Amount Spent:</label>
-                <input type="number" id="amount" step="0.01" placeholder="Enter amount" required>
-            </div>
-            
-            <div class="form-group">
-                <label for="payer">Who Paid:</label>
-                <select id="payer" required>
-                    <option value="">Select payer</option>
-                    <option value="Hanaan">Hanaan</option>
-                    <option value="Fahad">Fahad</option>
-                    <option value="Tayyab">Tayyab</option>
-                    <option value="Islam">Islam</option>
-                </select>
-            </div>
-            
-            <div class="form-group">
-                <label for="description">Description (optional):</label>
-                <input type="text" id="description" placeholder="e.g., Food, Gas, etc.">
-            </div>
-            
-            <div class="form-group">
-                <label>Split Between:</label>
-                <div class="people-selection">
-                    <div class="person-checkbox">
-                        <input type="checkbox" id="hanaan" value="Hanaan">
-                        <label for="hanaan">Hanaan</label>
-                    </div>
-                    <div class="person-checkbox">
-                        <input type="checkbox" id="fahad" value="Fahad">
-                        <label for="fahad">Fahad</label>
-                    </div>
-                    <div class="person-checkbox">
-                        <input type="checkbox" id="tayyab" value="Tayyab">
-                        <label for="tayyab">Tayyab</label>
-                    </div>
-                    <div class="person-checkbox">
-                        <input type="checkbox" id="islam" value="Islam">
-                        <label for="islam">Islam</label>
-                    </div>
-                </div>
-            </div>
-            
-            <button class="btn" onclick="addExpense()">Add Expense</button>
-            <button class="btn" onclick="clearAllData()" style="background: linear-gradient(135deg, #fc8181, #f56565); margin-left: 1rem;">Clear All Data</button>
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('expenses')">💰 Add Expense</button>
+            <button class="tab" onclick="showTab('payback')">💳 Pay Back</button>
+            <button class="tab" onclick="showTab('history')">📊 History</button>
         </div>
         
-        <div class="expenses-section">
-            <h2>📊 Expenses</h2>
-            <div class="table-container">
-                <table class="expenses-table">
-                    <thead>
-                        <tr>
-                            <th>Date</th>
-                            <th>Description</th>
-                            <th>Amount</th>
-                            <th>Paid By</th>
-                            <th>Split Between</th>
-                            <th>Per Person</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody id="expenses-tbody">
-                    </tbody>
-                </table>
+        <!-- Add Expense Tab -->
+        <div id="expenses-tab" class="tab-content active">
+            <div class="form-section">
+                <h2>💰 Add New Expense</h2>
+                <div class="form-group">
+                    <label for="amount">Amount Spent:</label>
+                    <input type="number" id="amount" step="0.01" placeholder="Enter amount" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="payer">Who Paid:</label>
+                    <select id="payer" required>
+                        <option value="">Select payer</option>
+                        <option value="Hanaan">Hanaan</option>
+                        <option value="Fahad">Fahad</option>
+                        <option value="Tayyab">Tayyab</option>
+                        <option value="Islam">Islam</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="description">Description (optional):</label>
+                    <input type="text" id="description" placeholder="e.g., Food, Gas, etc.">
+                </div>
+                
+                <div class="form-group">
+                    <label>Split Between:</label>
+                    <div class="people-selection">
+                        <div class="person-checkbox">
+                            <input type="checkbox" id="hanaan" value="Hanaan">
+                            <label for="hanaan">Hanaan</label>
+                        </div>
+                        <div class="person-checkbox">
+                            <input type="checkbox" id="fahad" value="Fahad">
+                            <label for="fahad">Fahad</label>
+                        </div>
+                        <div class="person-checkbox">
+                            <input type="checkbox" id="tayyab" value="Tayyab">
+                            <label for="tayyab">Tayyab</label>
+                        </div>
+                        <div class="person-checkbox">
+                            <input type="checkbox" id="islam" value="Islam">
+                            <label for="islam">Islam</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <button class="btn" onclick="addExpense()">Add Expense</button>
+            </div>
+        </div>
+        
+        <!-- Pay Back Tab -->
+        <div id="payback-tab" class="tab-content">
+            <div class="form-section">
+                <h2>💳 Record Payment</h2>
+                <div class="form-group">
+                    <label for="payment-amount">Payment Amount:</label>
+                    <input type="number" id="payment-amount" step="0.01" placeholder="Enter payment amount" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="payment-from">From:</label>
+                    <select id="payment-from" required>
+                        <option value="">Select person who paid</option>
+                        <option value="Hanaan">Hanaan</option>
+                        <option value="Fahad">Fahad</option>
+                        <option value="Tayyab">Tayyab</option>
+                        <option value="Islam">Islam</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="payment-to">To:</label>
+                    <select id="payment-to" required>
+                        <option value="">Select person who received payment</option>
+                        <option value="Hanaan">Hanaan</option>
+                        <option value="Fahad">Fahad</option>
+                        <option value="Tayyab">Tayyab</option>
+                        <option value="Islam">Islam</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="payment-description">Description (optional):</label>
+                    <input type="text" id="payment-description" placeholder="e.g., Cash payment, Bank transfer">
+                </div>
+                
+                <button class="btn payback" onclick="addPayment()">Record Payment</button>
+            </div>
+        </div>
+        
+        <!-- History Tab -->
+        <div id="history-tab" class="tab-content">
+            <div class="expenses-section">
+                <h2>📊 Transaction History</h2>
+                <div class="table-container">
+                    <table class="expenses-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Type</th>
+                                <th>Description</th>
+                                <th>Amount</th>
+                                <th>From</th>
+                                <th>To/Split</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="transactions-tbody">
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
         
@@ -463,28 +611,15 @@
                 <ul class="owes-list" id="islam-owes"></ul>
             </div>
         </div>
+        
+        <div style="text-align: center; margin-top: 2rem;">
+            <button class="btn danger" onclick="clearAllData()">Clear All Data</button>
+        </div>
     </div>
 
-    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
     <script>
-        // Firebase configuration - REPLACE WITH YOUR CONFIG
-        const firebaseConfig = {
-  apiKey: "AIzaSyBuOLYdHiJdO-BmpkN9LfUDW2I6FVu9LXU",
-  authDomain: "expense-calculator-b5815.firebaseapp.com",
-  projectId: "expense-calculator-b5815",
-  storageBucket: "expense-calculator-b5815.firebasestorage.app",
-  messagingSenderId: "621644311567",
-  appId: "1:621644311567:web:e3a9bc56a7c0f0db01877a",
-  measurementId: "G-H8VJKZF2LG"
-};
-        
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-        
-        let expenses = [];
-        let expenseIdCounter = 1;
+        let transactions = [];
+        let transactionIdCounter = 1;
         
         // Balance tracking - who owes whom
         let balances = {
@@ -494,62 +629,48 @@
             'Islam': { 'Hanaan': 0, 'Fahad': 0, 'Tayyab': 0 }
         };
         
-        // Save data to Firestore
-        async function saveData() {
-            try {
-                await db.collection('expenseTracker').doc('data').set({
-                    expenses: expenses,
-                    expenseIdCounter: expenseIdCounter,
-                    balances: balances,
-                    lastUpdated: new Date()
-                });
-                console.log('Data saved successfully');
-            } catch (error) {
-                console.error('Error saving data:', error);
-                alert('Error saving data. Please try again.');
-            }
-        }
-        
-        // Load data from Firestore
-        async function loadData() {
-            try {
-                const doc = await db.collection('expenseTracker').doc('data').get();
-                if (doc.exists) {
-                    const data = doc.data();
-                    expenses = data.expenses || [];
-                    expenseIdCounter = data.expenseIdCounter || 1;
-                    balances = data.balances || {
-                        'Hanaan': { 'Fahad': 0, 'Tayyab': 0, 'Islam': 0 },
-                        'Fahad': { 'Hanaan': 0, 'Tayyab': 0, 'Islam': 0 },
-                        'Tayyab': { 'Hanaan': 0, 'Fahad': 0, 'Islam': 0 },
-                        'Islam': { 'Hanaan': 0, 'Fahad': 0, 'Tayyab': 0 }
-                    };
-                    renderExpenses();
-                    renderBalances();
-                }
-            } catch (error) {
-                console.error('Error loading data:', error);
-                alert('Error loading data. Using local data.');
-            }
-        }
-        
-        // Listen for real-time updates
-        function setupRealTimeListener() {
-            db.collection('expenseTracker').doc('data').onSnapshot((doc) => {
-                if (doc.exists) {
-                    const data = doc.data();
-                    expenses = data.expenses || [];
-                    expenseIdCounter = data.expenseIdCounter || 1;
-                    balances = data.balances || {
-                        'Hanaan': { 'Fahad': 0, 'Tayyab': 0, 'Islam': 0 },
-                        'Fahad': { 'Hanaan': 0, 'Tayyab': 0, 'Islam': 0 },
-                        'Tayyab': { 'Hanaan': 0, 'Fahad': 0, 'Islam': 0 },
-                        'Islam': { 'Hanaan': 0, 'Fahad': 0, 'Tayyab': 0 }
-                    };
-                    renderExpenses();
-                    renderBalances();
-                }
+        // Tab switching
+        function showTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
             });
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById(`${tabName}-tab`).classList.add('active');
+            event.target.classList.add('active');
+        }
+        
+        // Save data to localStorage (replace with Firebase if needed)
+        function saveData() {
+            const data = {
+                transactions: transactions,
+                transactionIdCounter: transactionIdCounter,
+                balances: balances,
+                lastUpdated: new Date().toISOString()
+            };
+            localStorage.setItem('expenseTrackerData', JSON.stringify(data));
+        }
+        
+        // Load data from localStorage
+        function loadData() {
+            const savedData = localStorage.getItem('expenseTrackerData');
+            if (savedData) {
+                const data = JSON.parse(savedData);
+                transactions = data.transactions || [];
+                transactionIdCounter = data.transactionIdCounter || 1;
+                balances = data.balances || {
+                    'Hanaan': { 'Fahad': 0, 'Tayyab': 0, 'Islam': 0 },
+                    'Fahad': { 'Hanaan': 0, 'Tayyab': 0, 'Islam': 0 },
+                    'Tayyab': { 'Hanaan': 0, 'Fahad': 0, 'Islam': 0 },
+                    'Islam': { 'Hanaan': 0, 'Fahad': 0, 'Tayyab': 0 }
+                };
+                renderTransactions();
+                renderBalances();
+            }
         }
         
         function addExpense() {
@@ -571,8 +692,9 @@
                 return;
             }
             
-            const expense = {
-                id: expenseIdCounter++,
+            const transaction = {
+                id: transactionIdCounter++,
+                type: 'expense',
                 date: new Date().toLocaleDateString(),
                 description: description,
                 amount: amount,
@@ -581,19 +703,64 @@
                 perPerson: amount / selectedPeople.length
             };
             
-            expenses.push(expense);
-            updateBalances(expense);
-            saveData(); // Save to Firebase
+            transactions.push(transaction);
+            updateBalancesFromExpense(transaction);
+            saveData();
+            renderTransactions();
+            renderBalances();
             
             // Clear form
             document.getElementById('amount').value = '';
             document.getElementById('payer').value = '';
             document.getElementById('description').value = '';
             checkboxes.forEach(checkbox => checkbox.checked = false);
+            
+            alert('Expense added successfully!');
         }
         
-        function updateBalances(expense) {
-            const { amount, payer, splitBetween, perPerson } = expense;
+        function addPayment() {
+            const amount = parseFloat(document.getElementById('payment-amount').value);
+            const from = document.getElementById('payment-from').value;
+            const to = document.getElementById('payment-to').value;
+            const description = document.getElementById('payment-description').value || 'Payment';
+            
+            if (!amount || !from || !to) {
+                alert('Please fill in all required fields.');
+                return;
+            }
+            
+            if (from === to) {
+                alert('Cannot pay yourself!');
+                return;
+            }
+            
+            const transaction = {
+                id: transactionIdCounter++,
+                type: 'payment',
+                date: new Date().toLocaleDateString(),
+                description: description,
+                amount: amount,
+                from: from,
+                to: to
+            };
+            
+            transactions.push(transaction);
+            updateBalancesFromPayment(transaction);
+            saveData();
+            renderTransactions();
+            renderBalances();
+            
+            // Clear form
+            document.getElementById('payment-amount').value = '';
+            document.getElementById('payment-from').value = '';
+            document.getElementById('payment-to').value = '';
+            document.getElementById('payment-description').value = '';
+            
+            alert('Payment recorded successfully!');
+        }
+        
+        function updateBalancesFromExpense(transaction) {
+            const { amount, payer, splitBetween, perPerson } = transaction;
             
             // Each person in splitBetween owes the payer their share
             splitBetween.forEach(person => {
@@ -603,38 +770,82 @@
             });
         }
         
-        function removeExpense(expenseId) {
-            const expense = expenses.find(e => e.id === expenseId);
-            if (expense) {
-                // Reverse the balance changes
-                const { amount, payer, splitBetween, perPerson } = expense;
-                splitBetween.forEach(person => {
-                    if (person !== payer) {
-                        balances[person][payer] -= perPerson;
-                    }
-                });
-                
-                // Remove expense
-                expenses = expenses.filter(e => e.id !== expenseId);
-                saveData(); // Save to Firebase
+        function updateBalancesFromPayment(transaction) {
+            const { amount, from, to } = transaction;
+            
+            // Person 'from' is paying 'to', so reduce the debt
+            balances[from][to] -= amount;
+            
+            // If the balance becomes negative, it means 'to' now owes 'from'
+            if (balances[from][to] < 0) {
+                balances[to][from] += Math.abs(balances[from][to]);
+                balances[from][to] = 0;
             }
         }
         
-        function renderExpenses() {
-            const tbody = document.getElementById('expenses-tbody');
+        function removeTransaction(transactionId) {
+            const transaction = transactions.find(t => t.id === transactionId);
+            if (transaction) {
+                // Reverse the balance changes
+                if (transaction.type === 'expense') {
+                    const { amount, payer, splitBetween, perPerson } = transaction;
+                    splitBetween.forEach(person => {
+                        if (person !== payer) {
+                            balances[person][payer] -= perPerson;
+                        }
+                    });
+                } else if (transaction.type === 'payment') {
+                    const { amount, from, to } = transaction;
+                    balances[from][to] += amount;
+                    
+                    // If this causes the reverse balance to become negative, adjust
+                    if (balances[to][from] > 0) {
+                        const adjustment = Math.min(balances[to][from], balances[from][to]);
+                        balances[to][from] -= adjustment;
+                        balances[from][to] -= adjustment;
+                    }
+                }
+                
+                // Remove transaction
+                transactions = transactions.filter(t => t.id !== transactionId);
+                saveData();
+                renderTransactions();
+                renderBalances();
+            }
+        }
+        
+        function renderTransactions() {
+            const tbody = document.getElementById('transactions-tbody');
             tbody.innerHTML = '';
             
-            expenses.forEach(expense => {
+            // Sort transactions by date (newest first)
+            const sortedTransactions = [...transactions].reverse();
+            
+            sortedTransactions.forEach(transaction => {
                 const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${expense.date}</td>
-                    <td>${expense.description}</td>
-                    <td class="amount">₺${expense.amount.toFixed(2)}</td>
-                    <td>${expense.payer}</td>
-                    <td>${expense.splitBetween.join(', ')}</td>
-                    <td class="amount">₺${expense.perPerson.toFixed(2)}</td>
-                    <td><button class="delete-btn" onclick="removeExpense(${expense.id})">Delete</button></td>
-                `;
+                
+                if (transaction.type === 'expense') {
+                    row.innerHTML = `
+                        <td>${transaction.date}</td>
+                        <td><span class="payment-type expense">Expense</span></td>
+                        <td>${transaction.description}</td>
+                        <td class="amount">₺${transaction.amount.toFixed(2)}</td>
+                        <td>${transaction.payer}</td>
+                        <td>${transaction.splitBetween.join(', ')}</td>
+                        <td><button class="delete-btn" onclick="removeTransaction(${transaction.id})">Delete</button></td>
+                    `;
+                } else if (transaction.type === 'payment') {
+                    row.innerHTML = `
+                        <td>${transaction.date}</td>
+                        <td><span class="payment-type payment">Payment</span></td>
+                        <td>${transaction.description}</td>
+                        <td class="amount positive">₺${transaction.amount.toFixed(2)}</td>
+                        <td>${transaction.from}</td>
+                        <td>${transaction.to}</td>
+                        <td><button class="delete-btn" onclick="removeTransaction(${transaction.id})">Delete</button></td>
+                    `;
+                }
+                
                 tbody.appendChild(row);
             });
         }
@@ -661,52 +872,4 @@
                             const li = document.createElement('li');
                             
                             if (netAmount > 0) {
-                                li.innerHTML = `Owes ${otherPerson}: <span class="amount">₺${netAmount.toFixed(2)}</span>`;
-                            } else {
-                                li.innerHTML = `${otherPerson} owes me: <span class="amount">₺${Math.abs(netAmount).toFixed(2)}</span>`;
-                            }
-                            
-                            owesList.appendChild(li);
-                        }
-                    }
-                });
-                
-                if (!hasOwings) {
-                    const li = document.createElement('li');
-                    li.innerHTML = '<span class="description">✅ All settled up!</span>';
-                    owesList.appendChild(li);
-                }
-            });
-        }
-        
-        // Clear all data
-        async function clearAllData() {
-            if (confirm('Are you sure you want to clear all expenses and balances? This cannot be undone.')) {
-                try {
-                    await db.collection('expenseTracker').doc('data').delete();
-                    expenses = [];
-                    expenseIdCounter = 1;
-                    balances = {
-                        'Hanaan': { 'Fahad': 0, 'Tayyab': 0, 'Islam': 0 },
-                        'Fahad': { 'Hanaan': 0, 'Tayyab': 0, 'Islam': 0 },
-                        'Tayyab': { 'Hanaan': 0, 'Fahad': 0, 'Islam': 0 },
-                        'Islam': { 'Hanaan': 0, 'Fahad': 0, 'Tayyab': 0 }
-                    };
-                    renderExpenses();
-                    renderBalances();
-                    alert('All data cleared successfully!');
-                } catch (error) {
-                    console.error('Error clearing data:', error);
-                    alert('Error clearing data. Please try again.');
-                }
-            }
-        }
-        
-        // Initialize app
-        window.addEventListener('load', async () => {
-            await loadData();
-            setupRealTimeListener();
-        });
-    </script>
-</body>
-</html>
+                                li.innerHTML = `
