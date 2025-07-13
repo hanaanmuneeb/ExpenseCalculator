@@ -555,10 +555,10 @@
                 row.innerHTML = `
                     <td>${expense.date}</td>
                     <td>${expense.description}</td>
-                    <td class="amount">$${expense.amount.toFixed(2)}</td>
+                    <td class="amount">₺${expense.amount.toFixed(2)}</td>
                     <td>${expense.payer}</td>
                     <td>${expense.splitBetween.join(', ')}</td>
-                    <td class="amount">$${expense.perPerson.toFixed(2)}</td>
+                    <td class="amount">₺${expense.perPerson.toFixed(2)}</td>
                     <td><button class="delete-btn" onclick="removeExpense(${expense.id})">Delete</button></td>
                 `;
                 tbody.appendChild(row);
@@ -587,9 +587,9 @@
                             const li = document.createElement('li');
                             
                             if (netAmount > 0) {
-                                li.innerHTML = `Owes ${otherPerson}: <span class="amount">$${netAmount.toFixed(2)}</span>`;
+                                li.innerHTML = `Owes ${otherPerson}: <span class="amount">₺${netAmount.toFixed(2)}</span>`;
                             } else {
-                                li.innerHTML = `${otherPerson} owes me: <span class="amount">$${Math.abs(netAmount).toFixed(2)}</span>`;
+                                li.innerHTML = `${otherPerson} owes me: <span class="amount">₺${Math.abs(netAmount).toFixed(2)}</span>`;
                             }
                             
                             owesList.appendChild(li);
