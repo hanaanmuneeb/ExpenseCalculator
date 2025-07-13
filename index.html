@@ -421,6 +421,7 @@
             </div>
             
             <button class="btn" onclick="addExpense()">Add Expense</button>
+            <button class="btn" onclick="clearAllData()" style="background: linear-gradient(135deg, #fc8181, #f56565); margin-left: 1rem;">Clear All Data</button>
         </div>
         
         <div class="expenses-section">
@@ -464,7 +465,24 @@
         </div>
     </div>
 
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
     <script>
+        // Firebase configuration - REPLACE WITH YOUR CONFIG
+        const firebaseConfig = {
+  apiKey: "AIzaSyBuOLYdHiJdO-BmpkN9LfUDW2I6FVu9LXU",
+  authDomain: "expense-calculator-b5815.firebaseapp.com",
+  projectId: "expense-calculator-b5815",
+  storageBucket: "expense-calculator-b5815.firebasestorage.app",
+  messagingSenderId: "621644311567",
+  appId: "1:621644311567:web:e3a9bc56a7c0f0db01877a",
+  measurementId: "G-H8VJKZF2LG"
+};
+        
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        
         let expenses = [];
         let expenseIdCounter = 1;
         
@@ -475,6 +493,64 @@
             'Tayyab': { 'Hanaan': 0, 'Fahad': 0, 'Islam': 0 },
             'Islam': { 'Hanaan': 0, 'Fahad': 0, 'Tayyab': 0 }
         };
+        
+        // Save data to Firestore
+        async function saveData() {
+            try {
+                await db.collection('expenseTracker').doc('data').set({
+                    expenses: expenses,
+                    expenseIdCounter: expenseIdCounter,
+                    balances: balances,
+                    lastUpdated: new Date()
+                });
+                console.log('Data saved successfully');
+            } catch (error) {
+                console.error('Error saving data:', error);
+                alert('Error saving data. Please try again.');
+            }
+        }
+        
+        // Load data from Firestore
+        async function loadData() {
+            try {
+                const doc = await db.collection('expenseTracker').doc('data').get();
+                if (doc.exists) {
+                    const data = doc.data();
+                    expenses = data.expenses || [];
+                    expenseIdCounter = data.expenseIdCounter || 1;
+                    balances = data.balances || {
+                        'Hanaan': { 'Fahad': 0, 'Tayyab': 0, 'Islam': 0 },
+                        'Fahad': { 'Hanaan': 0, 'Tayyab': 0, 'Islam': 0 },
+                        'Tayyab': { 'Hanaan': 0, 'Fahad': 0, 'Islam': 0 },
+                        'Islam': { 'Hanaan': 0, 'Fahad': 0, 'Tayyab': 0 }
+                    };
+                    renderExpenses();
+                    renderBalances();
+                }
+            } catch (error) {
+                console.error('Error loading data:', error);
+                alert('Error loading data. Using local data.');
+            }
+        }
+        
+        // Listen for real-time updates
+        function setupRealTimeListener() {
+            db.collection('expenseTracker').doc('data').onSnapshot((doc) => {
+                if (doc.exists) {
+                    const data = doc.data();
+                    expenses = data.expenses || [];
+                    expenseIdCounter = data.expenseIdCounter || 1;
+                    balances = data.balances || {
+                        'Hanaan': { 'Fahad': 0, 'Tayyab': 0, 'Islam': 0 },
+                        'Fahad': { 'Hanaan': 0, 'Tayyab': 0, 'Islam': 0 },
+                        'Tayyab': { 'Hanaan': 0, 'Fahad': 0, 'Islam': 0 },
+                        'Islam': { 'Hanaan': 0, 'Fahad': 0, 'Tayyab': 0 }
+                    };
+                    renderExpenses();
+                    renderBalances();
+                }
+            });
+        }
         
         function addExpense() {
             const amount = parseFloat(document.getElementById('amount').value);
@@ -507,8 +583,7 @@
             
             expenses.push(expense);
             updateBalances(expense);
-            renderExpenses();
-            renderBalances();
+            saveData(); // Save to Firebase
             
             // Clear form
             document.getElementById('amount').value = '';
@@ -541,8 +616,7 @@
                 
                 // Remove expense
                 expenses = expenses.filter(e => e.id !== expenseId);
-                renderExpenses();
-                renderBalances();
+                saveData(); // Save to Firebase
             }
         }
         
@@ -605,9 +679,34 @@
             });
         }
         
-        // Initialize
-        renderExpenses();
-        renderBalances();
+        // Clear all data
+        async function clearAllData() {
+            if (confirm('Are you sure you want to clear all expenses and balances? This cannot be undone.')) {
+                try {
+                    await db.collection('expenseTracker').doc('data').delete();
+                    expenses = [];
+                    expenseIdCounter = 1;
+                    balances = {
+                        'Hanaan': { 'Fahad': 0, 'Tayyab': 0, 'Islam': 0 },
+                        'Fahad': { 'Hanaan': 0, 'Tayyab': 0, 'Islam': 0 },
+                        'Tayyab': { 'Hanaan': 0, 'Fahad': 0, 'Islam': 0 },
+                        'Islam': { 'Hanaan': 0, 'Fahad': 0, 'Tayyab': 0 }
+                    };
+                    renderExpenses();
+                    renderBalances();
+                    alert('All data cleared successfully!');
+                } catch (error) {
+                    console.error('Error clearing data:', error);
+                    alert('Error clearing data. Please try again.');
+                }
+            }
+        }
+        
+        // Initialize app
+        window.addEventListener('load', async () => {
+            await loadData();
+            setupRealTimeListener();
+        });
     </script>
 </body>
 </html>
