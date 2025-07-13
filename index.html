@@ -467,6 +467,8 @@
             transform: none;
         }
     </style>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 </head>
 <body>
     <div class="container">
@@ -618,6 +620,21 @@
     </div>
 
     <script>
+        // --- Firebase Initialization ---
+        // TODO: Replace with your own Firebase config from the Firebase Console
+        const firebaseConfig = {
+  apiKey: "AIzaSyBuOLYdHiJdO-BmpkN9LfUDW2I6FVu9LXU",
+  authDomain: "expense-calculator-b5815.firebaseapp.com",
+  projectId: "expense-calculator-b5815",
+  storageBucket: "expense-calculator-b5815.firebasestorage.app",
+  messagingSenderId: "621644311567",
+  appId: "1:621644311567:web:e3a9bc56a7c0f0db01877a",
+  measurementId: "G-H8VJKZF2LG"
+};
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        // --- End Firebase Initialization ---
+        
         let transactions = [];
         let transactionIdCounter = 1;
         
@@ -644,7 +661,7 @@
             event.target.classList.add('active');
         }
         
-        // Save data to localStorage (replace with Firebase if needed)
+        // Save data to Firebase (was localStorage)
         function saveData() {
             const data = {
                 transactions: transactions,
@@ -652,25 +669,26 @@
                 balances: balances,
                 lastUpdated: new Date().toISOString()
             };
-            localStorage.setItem('expenseTrackerData', JSON.stringify(data));
+            db.ref('expenseTrackerData').set(data);
         }
         
-        // Load data from localStorage
+        // Load data from Firebase (was localStorage)
         function loadData() {
-            const savedData = localStorage.getItem('expenseTrackerData');
-            if (savedData) {
-                const data = JSON.parse(savedData);
-                transactions = data.transactions || [];
-                transactionIdCounter = data.transactionIdCounter || 1;
-                balances = data.balances || {
-                    'Hanaan': { 'Fahad': 0, 'Tayyab': 0, 'Islam': 0 },
-                    'Fahad': { 'Hanaan': 0, 'Tayyab': 0, 'Islam': 0 },
-                    'Tayyab': { 'Hanaan': 0, 'Fahad': 0, 'Islam': 0 },
-                    'Islam': { 'Hanaan': 0, 'Fahad': 0, 'Tayyab': 0 }
-                };
-                renderTransactions();
-                renderBalances();
-            }
+            db.ref('expenseTrackerData').once('value').then((snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    transactions = data.transactions || [];
+                    transactionIdCounter = data.transactionIdCounter || 1;
+                    balances = data.balances || {
+                        'Hanaan': { 'Fahad': 0, 'Tayyab': 0, 'Islam': 0 },
+                        'Fahad': { 'Hanaan': 0, 'Tayyab': 0, 'Islam': 0 },
+                        'Tayyab': { 'Hanaan': 0, 'Fahad': 0, 'Islam': 0 },
+                        'Islam': { 'Hanaan': 0, 'Fahad': 0, 'Tayyab': 0 }
+                    };
+                    renderTransactions();
+                    renderBalances();
+                }
+            });
         }
         
         function addExpense() {
@@ -872,4 +890,46 @@
                             const li = document.createElement('li');
                             
                             if (netAmount > 0) {
-                                li.innerHTML = `
+                                li.innerHTML = `Owes ${otherPerson}: <span class="amount">₺${netAmount.toFixed(2)}</span>`;
+                            } else {
+                                li.innerHTML = `${otherPerson} owes me: <span class="amount positive">₺${Math.abs(netAmount).toFixed(2)}</span>`;
+                            }
+                            
+                            owesList.appendChild(li);
+                        }
+                    }
+                });
+                
+                if (!hasOwings) {
+                    const li = document.createElement('li');
+                    li.innerHTML = '<span class="description">✅ All settled up!</span>';
+                    owesList.appendChild(li);
+                }
+            });
+        }
+        
+        // Clear all data
+        function clearAllData() {
+            if (confirm('Are you sure you want to clear all expenses and balances? This cannot be undone.')) {
+                transactions = [];
+                transactionIdCounter = 1;
+                balances = {
+                    'Hanaan': { 'Fahad': 0, 'Tayyab': 0, 'Islam': 0 },
+                    'Fahad': { 'Hanaan': 0, 'Tayyab': 0, 'Islam': 0 },
+                    'Tayyab': { 'Hanaan': 0, 'Fahad': 0, 'Islam': 0 },
+                    'Islam': { 'Hanaan': 0, 'Fahad': 0, 'Tayyab': 0 }
+                };
+                saveData();
+                renderTransactions();
+                renderBalances();
+                alert('All data cleared successfully!');
+            }
+        }
+        
+        // Initialize app
+        window.addEventListener('load', () => {
+            loadData();
+        });
+    </script>
+</body>
+</html>
