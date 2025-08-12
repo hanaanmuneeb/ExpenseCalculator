@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Group Expense Tracker</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💰</text></svg>">
     <style>
         * {
             margin: 0;
@@ -701,21 +702,30 @@
 
         // Listen for real-time updates
         function setupRealTimeListener() {
-            db.collection('expenseTracker').doc('data').onSnapshot((doc) => {
-                if (doc.exists) {
-                    const data = doc.data();
-                    transactions = data.transactions || [];
-                    transactionIdCounter = data.transactionIdCounter || 1;
-                    balances = data.balances || {
-                        'Hanaan': { 'Fahad': 0, 'Tayyab': 0, 'Islam': 0 },
-                        'Fahad': { 'Hanaan': 0, 'Tayyab': 0, 'Islam': 0 },
-                        'Tayyab': { 'Hanaan': 0, 'Fahad': 0, 'Islam': 0 },
-                        'Islam': { 'Hanaan': 0, 'Fahad': 0, 'Tayyab': 0 }
-                    };
-                    renderTransactions();
-                    renderBalances();
+            db.collection('expenseTracker').doc('data').onSnapshot(
+                (doc) => {
+                    if (doc.exists) {
+                        const data = doc.data();
+                        transactions = data.transactions || [];
+                        transactionIdCounter = data.transactionIdCounter || 1;
+                        balances = data.balances || {
+                            'Hanaan': { 'Fahad': 0, 'Tayyab': 0, 'Islam': 0 },
+                            'Fahad': { 'Hanaan': 0, 'Tayyab': 0, 'Islam': 0 },
+                            'Tayyab': { 'Hanaan': 0, 'Fahad': 0, 'Islam': 0 },
+                            'Islam': { 'Hanaan': 0, 'Fahad': 0, 'Tayyab': 0 }
+                        };
+                        renderTransactions();
+                        renderBalances();
+                    }
+                },
+                (error) => {
+                    console.error('Firestore listener error:', error);
+                    // Don't crash the app, just log the error
+                    if (error.code === 'permission-denied') {
+                        console.warn('Permission denied - check Firestore security rules');
+                    }
                 }
-            });
+            );
         }
         
         function addExpense() {
